@@ -29,6 +29,7 @@
                 , 'timeout': null
                 , 'scope':  null
                 , 'redirectUri': null
+                , 'passResToCallback': null
             }
             , readOnlyCalls = {
                   'admin.getallocation': true
@@ -295,7 +296,8 @@
 
                 if(isOAuthRequest && response && response.statusCode === 200 &&
                     response.headers && /.*text\/plain.*/.test(response.headers['content-type'])) {
-                    cb(parseOAuthApiResponse(body), response);
+                    var parsedBody = parseOAuthApiResponse(body)
+                    options('passResToCallback') ? cb(parsedBody, response) : cb(parsedBody)
                 } else {
                     var json;
                     try {
@@ -309,7 +311,7 @@
                           Error: ex
                       }};
                     }
-                    cb(json, response);
+                    options('passResToCallback') ? cb(json, response) : cb(json);
                 }
             });
         };
@@ -467,7 +469,7 @@
                 if(!data || data.error) {
                     originalCallback(new FacebookApiException(data));
                 } else {
-                    originalCallback(null, data, res);
+                    options('passResToCallback') ? originalCallback(null, data, res) : originalCallback(null, data);
                 }
             };
         }

@@ -36,15 +36,7 @@ describe('FB.api', function () {
                     result.should.have.property('username', 'zuck');
                     done();
                 });
-            });
-
-            it('should have content-length header as 172', function (done) {
-                FB.api('4', function (result, response) {
-                    response.should.have.header('content-length', '172')
-                    done();
-                })
-            })
-
+            });            
         });
 
         describe("FB.api('/4', cb)", function () {
@@ -126,18 +118,42 @@ describe('FB.api', function () {
         });
 
         describe("FB.api('4', cb)", function () {
-            it("should expose response object to callback with node style", function (done) {
+            beforeEach(function () {
                 nock('https://graph.facebook.com:443')
                     .get('/4')
                     .reply(200, "{\"id\":\"4\",\"name\":\"Mark Zuckerberg\",\"first_name\":\"Mark\",\"last_name\":\"Zuckerberg\",\"link\":\"http:\\/\\/www.facebook.com\\/zuck\",\"username\":\"zuck\",\"gender\":\"male\",\"locale\":\"en_US\"}", { 'access-control-allow-origin': '*',
                         'content-type': 'text/javascript; charset=UTF-8',
                         'content-length': '172' });
+            });
 
+            it("should not expose response object when passResToCallback is falsy", function (done) {
+                FB.api('4', function(data, res) {
+                    should.strictEqual(res, undefined);
+                    done();
+                });
+            });
+
+            it("should support passResToCallback option", function () {
+                FB.options({passResToCallback: true});
+                should.equal(FB.options('passResToCallback'), true);
+            });
+
+            it("should expose response object when passResToCallback is true", function (done) {
+                FB.options({passResToCallback: true});
+
+                FB.api('4', function(data, res) {
+                    res.should.have.header('content-length', '172');
+                    done();
+                });
+            });
+
+            it("should expose response object to node-style callback as well", function (done) {
+                FB.options({passResToCallback: true});
                 FB.napi('4', function(err, data, res) {
-                    res.should.have.status(200)
-                    done()
-                })
-            })
+                    res.should.have.status(200);
+                    done();
+                });
+            });
         })
     });
 });
