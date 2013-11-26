@@ -38,6 +38,13 @@ describe('FB.api', function () {
                 });
             });
 
+            it('should have content-length header as 172', function (done) {
+                FB.api('4', function (result, response) {
+                    response.should.have.header('content-length', '172')
+                    done();
+                })
+            })
+
         });
 
         describe("FB.api('/4', cb)", function () {
@@ -118,5 +125,19 @@ describe('FB.api', function () {
             });
         });
 
+        describe("FB.api('4', cb)", function () {
+            it("should expose response object to callback with node style", function (done) {
+                nock('https://graph.facebook.com:443')
+                    .get('/4')
+                    .reply(200, "{\"id\":\"4\",\"name\":\"Mark Zuckerberg\",\"first_name\":\"Mark\",\"last_name\":\"Zuckerberg\",\"link\":\"http:\\/\\/www.facebook.com\\/zuck\",\"username\":\"zuck\",\"gender\":\"male\",\"locale\":\"en_US\"}", { 'access-control-allow-origin': '*',
+                        'content-type': 'text/javascript; charset=UTF-8',
+                        'content-length': '172' });
+
+                FB.napi('4', function(err, data, res) {
+                    res.should.have.status(200)
+                    done()
+                })
+            })
+        })
     });
 });

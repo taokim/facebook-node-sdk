@@ -295,7 +295,7 @@
 
                 if(isOAuthRequest && response && response.statusCode === 200 &&
                     response.headers && /.*text\/plain.*/.test(response.headers['content-type'])) {
-                    cb(parseOAuthApiResponse(body));
+                    cb(parseOAuthApiResponse(body), response);
                 } else {
                     var json;
                     try {
@@ -309,7 +309,7 @@
                           Error: ex
                       }};
                     }
-                    cb(json);
+                    cb(json, response);
                 }
             });
         };
@@ -463,11 +463,11 @@
         nodeifyCallback = function (originalCallback) {
             // normalizes the callback parameters so that the
             // first parameter is always error and second is response
-            return function (res) {
-                if(!res || res.error) {
-                    originalCallback(new FacebookApiException(res));
+            return function (data, res) {
+                if(!data || data.error) {
+                    originalCallback(new FacebookApiException(data));
                 } else {
-                    originalCallback(null, res);
+                    originalCallback(null, data, res);
                 }
             };
         }
